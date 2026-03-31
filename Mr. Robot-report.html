@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TryHackMe Room Report - Mr. Robot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        code {
+            background-color: #eaeaea;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #eaeaea;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .section {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="section">
+        <h1>TryHackMe Room Report: Mr. Robot</h1>
+        <p><strong>Author:</strong> Luyanda</p>
+        <p><strong>Date:</strong> 31 March 2026</p>
+    </div>
+
+    <div class="section">
+        <h2>1. Room Overview</h2>
+        <p>The <strong>Mr. Robot</strong> room is a beginner-friendly TryHackMe room inspired by the TV series. It focuses on basic Linux commands, enumeration, and gaining initial access through web vulnerabilities.</p>
+    </div>
+
+    <div class="section">
+        <h2>2. Objectives</h2>
+        <ul>
+            <li>Understand basic Linux commands and file navigation.</li>
+            <li>Practice enumeration using Nmap and Dirb/Gobuster.</li>
+            <li>Retrieve user and root flags by exploiting misconfigurations.</li>
+            <li>Learn to document steps for penetration testing.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>3. Walkthrough</h2>
+        <ol>
+            <li><strong>Scanning:</strong> Used <code>nmap</code> to identify open ports (typically SSH and HTTP).</li>
+            <li><strong>Enumeration:</strong> Explored directories using <code>Gobuster</code> to find hidden files or web panels.</li>
+            <li><strong>Exploitation:</strong> Found credentials in files or via default passwords; used SSH to access the machine.</li>
+            <li><strong>Privilege Escalation:</strong> Checked system for vulnerable SUID files, misconfigured scripts, and readable logs to gain root access.</li>
+            <li><strong>Flag Collection:</strong> Captured <code>user.txt</code> and <code>root.txt</code> flags and documented commands used.</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>4. Challenges & Solutions</h2>
+        <p><strong>Challenge:</strong> Finding the hidden credentials for SSH login.</p>
+        <p><strong>Solution:</strong> Enumerated web directories using <code>Gobuster</code>, discovered a backup file containing credentials, then logged in with SSH.</p>
+    </div>
+
+    <div class="section">
+        <h2>5. Tools Used</h2>
+        <ul>
+            <li>Nmap – Port scanning</li>
+            <li>Gobuster – Directory enumeration</li>
+            <li>SSH – Remote login</li>
+            <li>Linux terminal commands (ls, cat, find)</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>6. Lessons Learned</h2>
+        <ul>
+            <li>Importance of enumeration for finding hidden files and directories.</li>
+            <li>Basic Linux command proficiency is essential for penetration testing.</li>
+            <li>Always check for misconfigured files or default credentials.</li>
+            <li>Documenting every step is crucial for reports and reproducibility.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>7. Conclusion</h2>
+        <p>The Mr. Robot TryHackMe room provides a hands-on introduction to Linux enumeration, SSH access, and privilege escalation. It reinforces core penetration testing skills in a beginner-friendly environment and demonstrates how small oversights can be exploited by attackers.</p>
+    </div>
+
+</body>
+</html>
