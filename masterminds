@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TryHackMe Room Report - Mastermind</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        code {
+            background-color: #eaeaea;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        pre {
+            background-color: #eaeaea;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .section {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="section">
+        <h1>TryHackMe Room Report: Mastermind</h1>
+        <p><strong>Author:</strong> Luyanda</p>
+        <p><strong>Date:</strong> 31 March 2026</p>
+    </div>
+
+    <div class="section">
+        <h2>1. Room Overview</h2>
+        <p>The <strong>Mastermind</strong> room on TryHackMe is a beginner-friendly room designed to teach basic Linux commands, enumeration techniques, and password cracking. The goal is to simulate a real penetration testing scenario, starting from reconnaissance and ending with flag collection.</p>
+    </div>
+
+    <div class="section">
+        <h2>2. Objectives</h2>
+        <ul>
+            <li>Learn basic Linux navigation and commands.</li>
+            <li>Perform enumeration using Nmap and directory scanning tools.</li>
+            <li>Practice password cracking using Hydra or other tools.</li>
+            <li>Capture user and root flags and document the process.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>3. Walkthrough</h2>
+        <ol>
+            <li><strong>Scanning:</strong> Used <code>nmap</code> to identify open ports, typically SSH, HTTP, and sometimes FTP.</li>
+            <li><strong>Enumeration:</strong> Explored web directories with <code>Gobuster</code> or <code>Dirb</code>, inspected source code for hints or credentials.</li>
+            <li><strong>Exploitation:</strong> Used found credentials to SSH into the system or access hidden pages.</li>
+            <li><strong>Privilege Escalation:</strong> Checked for SUID binaries, misconfigured scripts, and readable files to gain root access.</li>
+            <li><strong>Flag Collection:</strong> Retrieved <code>user.txt</code> and <code>root.txt</code>, documenting all commands executed.</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>4. Challenges & Solutions</h2>
+        <p><strong>Challenge:</strong> Finding valid SSH credentials hidden in the system.</p>
+        <p><strong>Solution:</strong> Enumerated files in user directories and hidden web directories to discover a backup file containing the password, then used it for SSH login.</p>
+    </div>
+
+    <div class="section">
+        <h2>5. Tools Used</h2>
+        <ul>
+            <li>Nmap – Port scanning</li>
+            <li>Gobuster / Dirb – Directory enumeration</li>
+            <li>Hydra – Password brute forcing</li>
+            <li>SSH – Remote access</li>
+            <li>Linux commands – ls, cat, find, grep</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>6. Lessons Learned</h2>
+        <ul>
+            <li>Effective enumeration is critical for finding hidden information.</li>
+            <li>Linux command-line skills are essential for penetration testing.</li>
+            <li>Passwords and configuration files are often the weakest link in a system.</li>
+            <li>Documenting each step improves reproducibility and clarity.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>7. Conclusion</h2>
+        <p>The Mastermind TryHackMe room provides a solid introduction to Linux enumeration, password cracking, and privilege escalation. It reinforces practical skills that are widely applicable in real-world penetration testing scenarios and helps beginners build confidence in using Kali Linux and hacking tools.</p>
+    </div>
+
+</body>
+</html>
