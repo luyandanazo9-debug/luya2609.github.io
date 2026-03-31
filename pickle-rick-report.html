@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pickle Rick Report</title>
+</head>
+<body>
+    <h1>TryHackMe Report: Pickle Rick</h1>
+
+    <h2>Objective</h2>
+    <p>Gain access to the target machine and collect the three secret ingredients.</p>
+
+    <h2>Tools Used</h2>
+    <ul>
+        <li>Nmap</li>
+        <li>Gobuster</li>
+        <li>Linux Terminal</li>
+        <li>Web Browser</li>
+    </ul>
+
+    <h2>Reconnaissance</h2>
+    <p>Performed an Nmap scan to identify open ports and services.</p>
+
+    <pre>
+nmap -sV TARGET-IP
+    </pre>
+
+    <p>Discovered port 80 running HTTP.</p>
+
+    <h2>Web Enumeration</h2>
+    <p>Inspected the webpage source code and found the username:</p>
+
+    <pre>
+R1ckRul3s
+    </pre>
+
+    <p>Checked robots.txt and found the password:</p>
+
+    <pre>
+Wubbalubbadubdub
+    </pre>
+
+    <h2>Exploitation</h2>
+    <p>Logged into the web portal and used the command execution panel.</p>
+
+    <pre>
+ls
+cat Sup3rS3cretPickl3Ingred.txt
+    </pre>
+
+    <h2>Privilege Escalation</h2>
+    <p>Checked sudo privileges and escalated to root.</p>
+
+    <pre>
+sudo -l
+sudo su
+    </pre>
+
+    <h2>Findings</h2>
+    <ul>
+        <li>Information disclosure in source code</li>
+        <li>Credentials exposed in robots.txt</li>
+        <li>Remote command execution</li>
+        <li>Weak sudo configuration</li>
+    </ul>
+
+    <a href="index.html">Back to Home</a>
+</body>
+</html>
